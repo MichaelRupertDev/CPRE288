@@ -1,6 +1,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "methods.h"
+#include <math.h>
+#include "util.h"
 
 #define CLOCK_COUNT 15625
 #define CHECK_COUNT 3125
@@ -71,20 +73,22 @@ int ADC_read() {
 
 void TC_init() {
 	TCCR1A = 0b00000000;
-	TCCR1B = 0b11000100;
-	TCCR1C = 0;
-	TIMSK = 0b00100100;
+	TCCR1B |= 0b01000100;
+	TCCR1C &= 0b00011111;
+	TIMSK |= 0b00100000;
+	TIFR |= 0b00111100;
 }
 
 void send_pulse()
 {
-	//TIMSK &= 0b11011111;
+	TIMSK &= 0b11011111;
 	DDRD |=	0x10; //	set	PD4	as	output
 	PORTD |= 0x10; //	set	PD4	to	high
 	wait_ms(3); //	wait
 	PORTD &= 0xEF; //	set	PD4	to	low
 	DDRD &=	0xEF; //	set	PD4	as	input
 	TIFR |= 0b00111100;
+	TIMSK |= 0b00100000;
 	
 }
 
@@ -106,10 +110,10 @@ DDRE |= _BV(4);
 
 void move_servo(unsigned degree)
 {
-	unsigned pd;
+	unsigned pulse_width;
 	//unsigned pulse_width; // pulse width in cycles
-	pd = 18.511*degree + 700; // calculate pulse width in cycles
-	OCR3B = pd;// set pulse width
-	wait_ms(25);             // you need to call wait_ms() here to enforce a delay for the servo to
-	                      // move to the position
+	pulse_width = 18.511*degree + 700; // calculate pulse width in cycles
+	OCR3B = pulse_width;// set pulse width
+	wait_ms(60);             // you need to call wait_ms() here to enforce a delay for the servo to
+	// move to the position
 }
