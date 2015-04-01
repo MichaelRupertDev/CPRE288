@@ -1,6 +1,13 @@
-METHODS:
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include "methods.h"
 
-Lab 5:
+#define CLOCK_COUNT 15625
+#define CHECK_COUNT 3125
+
+#define TOP 43000
+
+unsigned pulse_width;
 
 void serial_init(){
 	//unsigned int baud = 51; // COM1
@@ -48,9 +55,6 @@ void timer_init(void) {
 	sei();
 }
 
-
-Lab 6: 
-
 void ADC_init() {
 	
 	ADMUX = 0b11000010;// Set up refevcence voltage and channel
@@ -59,13 +63,11 @@ void ADC_init() {
 
 int ADC_read() {
 	
-	ADMUX = 0b11000010; // Select 
+//	ADMUX = 0b11000010; // Select 
 	ADCSRA |= 0b01000000; // Start sensor
 	while (ADCSRA & 0b01000000)	{}
 	return ADC; 
 }
-
-Lab 7:
 
 void TC_init() {
 	TCCR1A = 0b00000000;
@@ -93,23 +95,21 @@ unsigned int time2dist(unsigned time)
 	return dist;
 }
 
-
-Lab 8:
-
 void timer3_init()
 {	
 TCCR3A = 0b00100011;
 TCCR3B = 0b00011010;
-OCR3A = TOP;
+OCR3A = 43000;
 //OCR3B = 0b101110111000;
 DDRE |= _BV(4);
 }
 
 void move_servo(unsigned degree)
 {
+	unsigned pd;
 	//unsigned pulse_width; // pulse width in cycles
-	pulse_width = 18.511*degree + 700; // calculate pulse width in cycles
-	OCR3B = pulse_width;// set pulse width
+	pd = 18.511*degree + 700; // calculate pulse width in cycles
+	OCR3B = pd;// set pulse width
 	wait_ms(25);             // you need to call wait_ms() here to enforce a delay for the servo to
 	                      // move to the position
 }
